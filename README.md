@@ -68,12 +68,14 @@ runtimeconditions-python-profiler profile generate --project apps/request-logger
 
 All three produce the same Conditions.
 
-**Condition names.** The current profilers do not give Conditions a `name`
-(it is optional in core 0.4.0). The Kratix adapter in this repo still expects
-names, so a freshly generated Profile needs names added before the adapter can
-use it. The committed `artifacts/request-logger-http.profile.yaml` and
-`portable-profile/scripts/generate-profile.sh` are unchanged and still use the
-older flow.
+**Condition names.** The profilers do not give Conditions a `name` (it is
+optional in core 0.4.0). The Kratix resolver and the development binder name
+such Conditions after their kind (`api-1`, `cache-1`) in their messages.
+
+`portable-profile/scripts/generate-profile.sh` runs `rc profile generate` on the
+Go app (put `rc` on `PATH`, or set `RC=/path/to/rc`) and writes
+`artifacts/request-logger-http.profile.yaml`; use `--check` to confirm the
+committed Profile still matches source.
 
 ## Published Demo Images
 

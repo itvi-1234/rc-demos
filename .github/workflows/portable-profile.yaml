@@ -33,20 +33,16 @@ jobs:
       - uses: actions/checkout@v7
         with:
           path: rc-demos
-      - uses: actions/checkout@v7
-        with:
-          repository: runtimeconditions/extensions
-          path: extensions
-      - uses: actions/checkout@v7
-        with:
-          repository: runtimeconditions/go-rc-profiler
-          path: go-rc-profiler
       - uses: actions/setup-go@v7
         with:
-          go-version-file: go-rc-profiler/go.mod
+          go-version-file: rc-demos/apps/request-logger-http/go.mod
           cache-dependency-path: |
-            go-rc-profiler/go.sum
+            rc-demos/apps/request-logger-http/go.sum
             rc-demos/portable-profile/go.sum
+      - name: Install the rc CLI
+        run: |
+          curl -fsSL https://runtimeconditions.io/packages/setup.sh | sudo sh
+          sudo apt-get install -y rc-cli
       - name: Committed Profile matches application source
         working-directory: rc-demos
         run: portable-profile/scripts/generate-profile.sh --check
