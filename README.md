@@ -37,36 +37,55 @@ packages, so no sibling `extensions` checkout is needed:
 Build each one on its own:
 
 ```sh
-(cd apps/request-logger-http && go vet ./...)
-(cd apps/request-logger-http-java && mvn -q package)
+(cd apps/request-logger-http && go mod download && go vet ./...)
+(cd apps/request-logger-http-java && mvn -q -B package)
 (cd apps/request-logger-http-python && pip install .)
 ```
 
 ## Generate a Profile from an app
 
-Install the `rc` CLI and the profiler for the language
-(https://runtimeconditions.io/packages/setup.sh sets up the apt and dnf
-repositories; the Python profiler is `pip install runtimeconditions-profiler`
-into the app's own virtual environment).
+Install the `rc` CLI, then the profiler for the language:
 
 ```sh
-# Go
+# rc CLI: Homebrew, or the apt / dnf repositories that setup.sh configures
+brew install runtimeconditions/tools/rc-cli
+curl -fsSL https://runtimeconditions.io/packages/setup.sh | sudo sh
+sudo apt install rc-cli          # or: sudo dnf install rc-cli
+
+# Java profiler (needs JDK 17+)
+brew install runtimeconditions/tools/rc-profiler-java    # or: sudo apt install rc-profiler-java
+
+# Python profiler: it finds the bindings through the environment it is installed in,
+# so it has no system package. Install it into the app's virtual environment and
+# put that environment's bin directory on PATH.
+python3 -m venv .venv && . .venv/bin/activate
+pip install runtimeconditions-profiler
+```
+
+Then generate:
+
+```sh
+# Go (built into rc)
 rc profile generate --dir apps/request-logger-http --out request-logger-http.profile.yaml
 
-# Java (needs JDK 17+)
+# Java
 rc profile java generate --project apps/request-logger-http-java --resolve-build-classpath \
   --name request-logger-http \
   --workload-uri github.com/runtimeconditions/rc-demos/apps/request-logger-http-java \
   --workload-version dev
 
 # Python
-runtimeconditions-python-profiler profile generate --project apps/request-logger-http-python \
+rc profile python generate --project apps/request-logger-http-python \
   --name request-logger-http \
   --workload-uri github.com/runtimeconditions/rc-demos/apps/request-logger-http-python \
   --workload-version dev
 ```
 
-All three produce the same Conditions.
+All three produce the same API and cache Conditions, with one difference: the Go
+profile also includes the HTTP response schema of the todos API (completed, id,
+title). The Java demo leaves it out because the Java profiler cannot yet read the
+enum constants that name the field types, and the Python demo does not declare it
+yet, so those two profiles omit it.
 
 **Condition names.** The profilers do not give Conditions a `name` (it is
 optional in core 0.4.0). The Kratix resolver and the development binder name
